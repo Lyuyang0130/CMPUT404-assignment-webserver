@@ -46,7 +46,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
         #print ("Got a request of: %s\n" % self.data)
         inf1 = self.data.decode("utf-8")
         all_string = inf1.split('\n')
+        
         method,uri,httpV = all_string[0].split(' ')
+        #print(method,uri,httpV )
         #print('uri',uri)
         if method != 'GET': #invalid, return 405 Method not allowed
             self.request.sendall(bytearray("HTTP/1.1 405 Method Not Allowed\r\n",'utf-8'))
@@ -61,7 +63,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 
             #print('uri here is',uri)
             if not self.check_secure(uri):
-                self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\n",'utf-8'))
+                self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\n\r\n",'utf-8'))
             else:
                 #check html first
                 uri = root + uri
@@ -73,19 +75,21 @@ class MyWebServer(socketserver.BaseRequestHandler):
                         with open(uri,"r") as f:
                             text = f.read()
                             flag = 1
-                            self.request.sendall(bytearray(http_header+"text/html; charset=utf-8\r\n" + text,'utf-8'))
+                            self.request.sendall(bytearray(http_header+"text/html; charset=utf-8\r\n\r\n" + text+"\r\n",'utf-8'))
+                            f.close()
 
                 elif uri.endswith(".css"):
                     if os.path.exists(uri):
                         with open(uri,"r") as f:
                             text = f.read()
                             flag = 1
-                            self.request.sendall(bytearray(http_header+"text/css; charset=utf-8\r\n" + text,'utf-8'))
+                            self.request.sendall(bytearray(http_header+"text/css; charset=utf-8\r\n\r\n" + text+"\r\n",'utf-8'))
+                            f.close()
 
                 if flag == 0:
-                    self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\n",'utf-8'))
-        
-        #self.request.sendall(bytearray("OK",'utf-8'))
+                    self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\n\r\n",'utf-8'))
+    
+    #self.request.sendall(bytearray("OK",'utf-8'))
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
