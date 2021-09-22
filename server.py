@@ -73,14 +73,14 @@ class MyWebServer(socketserver.BaseRequestHandler):
                         with open(uri,"r") as f:
                             text = f.read()
                             flag = 1
-                            self.request.sendall(bytearray(http_header+"text/html; charset=utf-8\r\n" + text +"Connection: close\r\n",'utf-8'))
+                            self.request.sendall(bytearray(http_header+"text/html; charset=utf-8\r\n" + text,'utf-8'))
 
                 elif uri.endswith(".css"):
                     if os.path.exists(uri):
                         with open(uri,"r") as f:
                             text = f.read()
                             flag = 1
-                            self.request.sendall(bytearray(http_header+"text/css; charset=utf-8\r\n" + text +"Connection: close\r\n",'utf-8'))
+                            self.request.sendall(bytearray(http_header+"text/css; charset=utf-8\r\n" + text,'utf-8'))
 
                 if flag == 0:
                     self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\n",'utf-8'))
