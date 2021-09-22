@@ -27,10 +27,9 @@ import sys
 # run: python freetests.py
 
 # try: curl -v -X GET http://127.0.0.1:8080/
-
+# reference:https://stackoverflow.com/questions/6803505/does-my-code-prevent-directory-traversal
 
 class MyWebServer(socketserver.BaseRequestHandler):
-    #https://stackoverflow.com/questions/6803505/does-my-code-prevent-directory-traversal
     def check_secure(self,file_name):
         startdir = os.path.abspath(os.curdir)
         requested_path = os.path.relpath(file_name, startdir)
