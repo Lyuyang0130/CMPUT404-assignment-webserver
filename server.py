@@ -46,49 +46,52 @@ class MyWebServer(socketserver.BaseRequestHandler):
         #print ("Got a request of: %s\n" % self.data)
         inf1 = self.data.decode("utf-8")
         all_string = inf1.split('\n')
-        
-        method,uri,httpV = all_string[0].split(' ')
-        #print(method,uri,httpV )
-        #print('uri',uri)
-        if method != 'GET': #invalid, return 405 Method not allowed
-            self.request.sendall(bytearray("HTTP/1.1 405 Method Not Allowed\r\n",'utf-8'))
-        else: #check for the uri 
-            #first check for the end for 301, if invlaid, return
-            if (uri[-1]!='/') and ("." not in uri): #avoid .css and .index
-                inf_response = "http://127.0.0.1:8080"+ uri + "/"
-                self.request.sendall(bytearray("HTTP/1.1 301 Moved Permanently\r\nLocation:" +inf_response+"\r\n",'utf-8'))
-            else: #html and css
-                if uri[-1]=='/':
-                    uri += "index.html"
-                
-            #print('uri here is',uri)
-            if not self.check_secure(uri):
-                self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\n\r\n",'utf-8'))
-            else:
-                #check html first
-                uri = root + uri
-                http_header = "HTTP/1.1 200 OK\r\nContent-Type:"
-                flag = 0 #indicate 404 error
-                #check the suffix 
-                if uri.endswith(".html"):
-                    if os.path.exists(uri):
-                        with open(uri,"r") as f:
-                            text = f.read()
-                            flag = 1
-                            self.request.sendall(bytearray(http_header+"text/html; charset=utf-8\r\n\r\n" + text+"\r\n",'utf-8'))
-                            f.close()
-
-                elif uri.endswith(".css"):
-                    if os.path.exists(uri):
-                        with open(uri,"r") as f:
-                            text = f.read()
-                            flag = 1
-                            self.request.sendall(bytearray(http_header+"text/css; charset=utf-8\r\n\r\n" + text+"\r\n",'utf-8'))
-                            f.close()
-
-                if flag == 0:
+        if  len(all_string)==0:
+            return 
+        else:
+            method,uri,httpV = all_string[0].split(' ')
+            #print(method,uri,httpV )
+            #print('uri',uri)
+            
+            if method != 'GET': #invalid, return 405 Method not allowed
+                self.request.sendall(bytearray("HTTP/1.1 405 Method Not Allowed\r\n",'utf-8'))
+            else: #check for the uri 
+                #first check for the end for 301, if invlaid, return
+                if (uri[-1]!='/') and ("." not in uri): #avoid .css and .index
+                    inf_response = "http://127.0.0.1:8080"+ uri + "/"
+                    self.request.sendall(bytearray("HTTP/1.1 301 Moved Permanently\r\nLocation:" +inf_response+"\r\n",'utf-8'))
+                else: #html and css
+                    if uri[-1]=='/':
+                        uri += "index.html"
+                    
+                #print('uri here is',uri)
+                if not self.check_secure(uri):
                     self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\n\r\n",'utf-8'))
-    
+                else:
+                    #check html first
+                    uri = root + uri
+                    http_header = "HTTP/1.1 200 OK\r\nContent-Type:"
+                    flag = 0 #indicate 404 error
+                    #check the suffix 
+                    if uri.endswith(".html"):
+                        if os.path.exists(uri):
+                            with open(uri,"r") as f:
+                                text = f.read()
+                                flag = 1
+                                self.request.sendall(bytearray(http_header+"text/html; charset=utf-8\r\n\r\n" + text+"\r\n",'utf-8'))
+                                f.close()
+
+                    elif uri.endswith(".css"):
+                        if os.path.exists(uri):
+                            with open(uri,"r") as f:
+                                text = f.read()
+                                flag = 1
+                                self.request.sendall(bytearray(http_header+"text/css; charset=utf-8\r\n\r\n" + text+"\r\n",'utf-8'))
+                                f.close()
+
+                    if flag == 0:
+                        self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\n\r\n",'utf-8'))
+        
     #self.request.sendall(bytearray("OK",'utf-8'))
 
 if __name__ == "__main__":
