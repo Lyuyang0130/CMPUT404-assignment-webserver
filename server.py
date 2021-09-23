@@ -31,10 +31,11 @@ import sys
 
 class MyWebServer(socketserver.BaseRequestHandler):
     def check_secure(self,file_name):
-        startdir = os.path.abspath(os.curdir)
-        requested_path = os.path.relpath(file_name, startdir)
+        file_name_new = os.path.abspath(os.curdir) + '/www' + file_name
+        startdir = os.path.abspath(os.curdir) + '/www'
+        requested_path = os.path.relpath(file_name_new, startdir)
         requested_path = os.path.abspath(requested_path)
-        if file_name!= requested_path:
+        if not os.path.commonprefix([requested_path, startdir]):
             return False
         else:
             return True
@@ -43,24 +44,26 @@ class MyWebServer(socketserver.BaseRequestHandler):
         self.data = self.request.recv(1024).strip()
         if len(self.data)==0:
             return
-        root = "./www"
+        root = "www"
         #print ("Got a request of: %s\n" % self.data)
         inf1 = self.data.decode("utf-8")
         all_string = inf1.split('\n')
         method,uri,httpV = all_string[0].split(' ')
-        #print(method,uri,httpV )
-        #print('uri',uri)
+
         
         if method != 'GET': #invalid, return 405 Method not allowed
             self.request.sendall(bytearray("HTTP/1.1 405 Method Not Allowed\r\n",'utf-8'))
         else: #check for the uri 
             #first check for the end for 301, if invlaid, return
-            if (uri[-1]!='/') and ("." not in uri): #avoid .css and .index
+            uri1 = 'www' +uri
+            if (not os.path.isdir(uri1)) and (not os.path.isfile(uri1)):
+                self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\n\r\n",'utf-8'))
+                
+            if (uri1[-1]!='/') and os.path.isdir(uri1): #avoid file
                 inf_response = "http://127.0.0.1:8080"+ uri + "/"
                 self.request.sendall(bytearray("HTTP/1.1 301 Moved Permanently\r\nLocation:" +inf_response+"\r\n",'utf-8'))
-            else: #html and css
-                if uri[-1]=='/':
-                    uri += "index.html"
+            elif (uri1[-1]=='/') and os.path.isdir(uri1) :
+                uri += "index.html"
                 
             #print('uri here is',uri)
             if not self.check_secure(uri):
